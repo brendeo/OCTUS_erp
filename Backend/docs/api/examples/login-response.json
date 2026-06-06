@@ -1,0 +1,11 @@
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "tipo": "Bearer",
+  "expiraEm": 86400000,
+  "usuario": {
+    "id": 1,
+    "nome": "Administrador",
+    "email": "admin@gestorpyme.local",
+    "perfil": "GESTOR"
+  }
+}

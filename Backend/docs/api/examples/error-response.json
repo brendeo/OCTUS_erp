@@ -1,0 +1,7 @@
+{
+  "timestamp": "2026-06-01T21:00:00Z",
+  "status": 400,
+  "error": "VALIDATION_ERROR",
+  "message": "Quantidade deve ser maior que zero",
+  "path": "/api/products/1/movements"
+}

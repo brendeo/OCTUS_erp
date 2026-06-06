@@ -1,0 +1,578 @@
+openapi: 3.0.3
+info:
+  title: GestorPyME API
+  description: API REST do sistema de estoque e contabilidade para PyMEs.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+    description: Local
+tags:
+  - name: Auth
+  - name: Products
+  - name: StockMovements
+  - name: Payables
+  - name: Receivables
+  - name: Dashboard
+  - name: Reports
+  - name: Audit
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Token JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Usuário autenticado
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+  /products:
+    get:
+      tags: [Products]
+      parameters:
+        - { name: search, in: query, schema: { type: string } }
+        - { name: category, in: query, schema: { type: string } }
+        - { name: active, in: query, schema: { type: boolean } }
+        - { name: page, in: query, schema: { type: integer, default: 0 } }
+        - { name: size, in: query, schema: { type: integer, default: 20 } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPage'
+    post:
+      tags: [Products]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+  /products/alerts/low-stock:
+    get:
+      tags: [Products]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductResponse'
+  /products/{id}:
+    get:
+      tags: [Products]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+    put:
+      tags: [Products]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+  /products/{id}/deactivate:
+    patch:
+      tags: [Products]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+  /products/{productId}/movements:
+    get:
+      tags: [StockMovements]
+      parameters:
+        - { name: productId, in: path, required: true, schema: { type: integer } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+        - { name: type, in: query, schema: { $ref: '#/components/schemas/MovementType' } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StockMovementResponse'
+    post:
+      tags: [StockMovements]
+      parameters:
+        - { name: productId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMovementRequest'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockMovementResponse'
+  /payables:
+    get:
+      tags: [Payables]
+      parameters:
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/PayableStatus' } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PayableResponse'
+    post:
+      tags: [Payables]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePayableRequest'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayableResponse'
+  /payables/{id}:
+    get:
+      tags: [Payables]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayableResponse'
+    put:
+      tags: [Payables]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePayableRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayableResponse'
+  /payables/{id}/mark-paid:
+    patch:
+      tags: [Payables]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkPaidRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayableResponse'
+  /receivables:
+    get:
+      tags: [Receivables]
+      parameters:
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/ReceivableStatus' } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReceivableResponse'
+    post:
+      tags: [Receivables]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReceivableRequest'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceivableResponse'
+  /receivables/{id}:
+    get:
+      tags: [Receivables]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceivableResponse'
+    put:
+      tags: [Receivables]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateReceivableRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceivableResponse'
+  /receivables/{id}/mark-received:
+    patch:
+      tags: [Receivables]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkReceivedRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceivableResponse'
+  /audit:
+    get:
+      tags: [Audit]
+      summary: Histórico de auditoria (somente GESTOR)
+      security:
+        - bearerAuth: []
+      parameters:
+        - { name: entidade, in: query, schema: { type: string } }
+        - { name: from, in: query, schema: { type: string, format: date-time } }
+        - { name: to, in: query, schema: { type: string, format: date-time } }
+        - { name: page, in: query, schema: { type: integer, default: 0 } }
+        - { name: size, in: query, schema: { type: integer, default: 20 } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLogPage'
+        '403':
+          description: Sem permissão
+  /dashboard:
+    get:
+      tags: [Dashboard]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+  /cash-flow:
+    get:
+      tags: [Dashboard]
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashFlowResponse'
+  /reports/stock-movements:
+    get:
+      tags: [Reports]
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StockMovementResponse'
+  /reports/payables:
+    get:
+      tags: [Reports]
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/PayableStatus' } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PayableResponse'
+  /reports/receivables:
+    get:
+      tags: [Reports]
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/ReceivableStatus' } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReceivableResponse'
+  /reports/cash-flow:
+    get:
+      tags: [Reports]
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashFlowResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    MovementType:
+      type: string
+      enum: [ENTRADA, SAIDA]
+    PayableStatus:
+      type: string
+      enum: [PENDENTE, PAGA, VENCIDA]
+    ReceivableStatus:
+      type: string
+      enum: [PENDENTE, RECEBIDA, VENCIDA]
+    UserRole:
+      type: string
+      enum: [GESTOR, OPERADOR, ESTOQUE, CONTABIL]
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp: { type: string, format: date-time }
+        status: { type: integer }
+        error: { type: string }
+        message: { type: string }
+        path: { type: string }
+    LoginRequest:
+      type: object
+      required: [email, senha]
+      properties:
+        email: { type: string, format: email }
+        senha: { type: string }
+    LoginResponse:
+      type: object
+      properties:
+        token: { type: string }
+        tipo: { type: string, example: Bearer }
+        expiraEm: { type: integer }
+        usuario: { $ref: '#/components/schemas/UserResponse' }
+    UserResponse:
+      type: object
+      properties:
+        id: { type: integer }
+        nome: { type: string }
+        email: { type: string }
+        perfil: { $ref: '#/components/schemas/UserRole' }
+    CreateProductRequest:
+      type: object
+      required: [nome, categoria, unidade, precoReferencia, estoqueMinimo]
+      properties:
+        nome: { type: string }
+        categoria: { type: string }
+        unidade: { type: string }
+        precoReferencia: { type: number }
+        estoqueMinimo: { type: integer }
+        saldoAtual: { type: integer, default: 0 }
+    UpdateProductRequest:
+      allOf:
+        - $ref: '#/components/schemas/CreateProductRequest'
+    ProductResponse:
+      type: object
+      properties:
+        id: { type: integer }
+        nome: { type: string }
+        categoria: { type: string }
+        unidade: { type: string }
+        precoReferencia: { type: number }
+        estoqueMinimo: { type: integer }
+        saldoAtual: { type: integer }
+        ativo: { type: boolean }
+        estoqueBaixo: { type: boolean }
+    ProductPage:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductResponse'
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+    CreateMovementRequest:
+      type: object
+      required: [tipo, quantidade, data]
+      properties:
+        tipo: { $ref: '#/components/schemas/MovementType' }
+        quantidade: { type: integer, minimum: 1 }
+        data: { type: string, format: date }
+        observacao: { type: string }
+    StockMovementResponse:
+      type: object
+      properties:
+        id: { type: integer }
+        productId: { type: integer }
+        tipo: { $ref: '#/components/schemas/MovementType' }
+        quantidade: { type: integer }
+        data: { type: string, format: date }
+        observacao: { type: string }
+        createdBy: { type: string }
+        produto: { $ref: '#/components/schemas/ProductResponse' }
+    CreatePayableRequest:
+      type: object
+      required: [descricao, valor, vencimento]
+      properties:
+        descricao: { type: string }
+        valor: { type: number }
+        vencimento: { type: string, format: date }
+    UpdatePayableRequest:
+      allOf:
+        - $ref: '#/components/schemas/CreatePayableRequest'
+    MarkPaidRequest:
+      type: object
+      properties:
+        dataPagamento: { type: string, format: date }
+    PayableResponse:
+      type: object
+      properties:
+        id: { type: integer }
+        descricao: { type: string }
+        valor: { type: number }
+        vencimento: { type: string, format: date }
+        status: { $ref: '#/components/schemas/PayableStatus' }
+        dataPagamento: { type: string, format: date }
+    CreateReceivableRequest:
+      type: object
+      required: [descricao, valor, vencimento]
+      properties:
+        descricao: { type: string }
+        valor: { type: number }
+        vencimento: { type: string, format: date }
+    UpdateReceivableRequest:
+      allOf:
+        - $ref: '#/components/schemas/CreateReceivableRequest'
+    MarkReceivedRequest:
+      type: object
+      properties:
+        dataRecebimento: { type: string, format: date }
+    ReceivableResponse:
+      type: object
+      properties:
+        id: { type: integer }
+        descricao: { type: string }
+        valor: { type: number }
+        vencimento: { type: string, format: date }
+        status: { $ref: '#/components/schemas/ReceivableStatus' }
+        dataRecebimento: { type: string, format: date }
+    DashboardResponse:
+      type: object
+      properties:
+        totalProdutos: { type: integer }
+        produtosEstoqueBaixo: { type: integer }
+        totalAPagar: { type: number }
+        totalAReceber: { type: number }
+        saldoCaixa: { type: number }
+    CashFlowResponse:
+      type: object
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        totalEntradas: { type: number }
+        totalSaidas: { type: number }
+        saldo: { type: number }
+    AuditLogResponse:
+      type: object
+      properties:
+        id: { type: integer }
+        acao: { type: string }
+        entidade: { type: string }
+        entidadeId: { type: integer }
+        usuario: { type: string }
+        detalhes: { type: string }
+        createdAt: { type: string, format: date-time }
+    AuditLogPage:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditLogResponse'
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }

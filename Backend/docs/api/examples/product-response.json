@@ -1,0 +1,11 @@
+{
+  "id": 1,
+  "nome": "Arroz 5kg",
+  "categoria": "Mercearia",
+  "unidade": "UN",
+  "precoReferencia": 28.90,
+  "estoqueMinimo": 5,
+  "saldoAtual": 12,
+  "ativo": true,
+  "estoqueBaixo": false
+}

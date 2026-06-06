@@ -1,0 +1,15 @@
+{
+  "id": 1,
+  "productId": 1,
+  "tipo": "ENTRADA",
+  "quantidade": 10,
+  "data": "2026-06-01",
+  "observacao": "Compra fornecedor X",
+  "createdBy": "admin",
+  "produto": {
+    "id": 1,
+    "nome": "Arroz 5kg",
+    "saldoAtual": 12,
+    "estoqueBaixo": false
+  }
+}

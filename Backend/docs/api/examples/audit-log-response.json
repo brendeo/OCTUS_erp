@@ -1,0 +1,17 @@
+{
+  "content": [
+    {
+      "id": 1,
+      "acao": "CREATE",
+      "entidade": "Product",
+      "entidadeId": 5,
+      "usuario": "admin@gestorpyme.local",
+      "detalhes": "Arroz 5kg",
+      "createdAt": "2026-06-01T14:30:00"
+    }
+  ],
+  "page": 0,
+  "size": 20,
+  "totalElements": 1,
+  "totalPages": 1
+}
